@@ -1,0 +1,84 @@
+server:
+  port: 8080
+  tomcat:
+    uri-encoding: UTF-8
+
+spring:
+  application:
+    name: sharding-jdbc
+  main:
+    allow-bean-definition-overriding: true
+
+# xml扫描，多个目录用逗号或者分号分隔（告诉 Mapper 所对应的 XML 文件位置）
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+  global-config:
+    # db-config:
+    #id-type: auto #主键类型 AUTO:"数据库ID自增" INPUT:"用户输入ID",ID_WORKER:"全局唯一ID (数字类型唯一ID)", UUID:"全局唯一ID UUID";
+    #    field-strategy: NOT_EMPTY #字段策略 IGNORED:"忽略判断" NOT_NULL:"非 NULL 判断") NOT_EMPTY:"非空判断"
+    db-type: MYSQL
+configuration:
+  map-underscore-to-camel-case: true # 是否开启自动驼峰命名规则映射:从数据库列名到Java属性驼峰命名的类似映射
+
+sharding:
+  jdbc:
+    datasource:
+      # 数据源配置信息
+      names: db0,db1
+      db0:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://localhost:3306/db0?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8
+        username: root
+        password: yaoyao0203
+      db1:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        # Linux服务器docker的MySQL地址
+        url: jdbc:mysql://139.9.45.247:3306/db1?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8
+        username: root
+        password: 123456
+
+    config:
+      props:
+        sql:
+          show: true
+      sharding:
+        tables:
+          book:
+            # 逻辑表名为book的数据源节点
+            actual-data-nodes: db$->{0..1}.book_$->{0..1}
+            # 分库分片规则
+            database-strategy:
+              standard:
+                sharding-column: book_id
+                precise-algorithm-class-name: com.fuqiang.springbootsharding.config.sharding.book.ShardingBookDatabaseConfig
+            # 分表分片规则
+            table-strategy:
+              standard:
+                sharding-column: author_id
+                precise-algorithm-class-name: com.fuqiang.springbootsharding.config.sharding.book.ShardingBookTableConfig
+          # author表只在db0中，所以必须这么配置节点，让它只走db0.author节点
+          author:
+            actual-data-nodes: db0.author
+
+
+#    config:
+#      sharding:
+#        default-database-strategy:
+#          inline:
+#            sharding-column: book_id
+#            algorithm-expression: db$->{book_id % 2}
+#
+#        tables:
+#          book:
+#            actual-data-nodes: db0.book_$->{0..1}
+#            table-strategy:
+#              inline:
+#                sharding-column: author_id
+#                algorithm-expression: book_$->{author_id % 2}
+#
+#      # 打印sql语句
+#      props:
+#        sql.show: true
+
