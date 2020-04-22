@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 12005
   tomcat:
     uri-encoding: UTF-8
 
@@ -34,10 +34,11 @@ sharding:
       db1:
         type: com.alibaba.druid.pool.DruidDataSource
         driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://localhost:3306/db1?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8
         # Linux服务器docker的MySQL地址
-        url: jdbc:mysql://139.9.45.247:3306/db1?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8
+#        url: jdbc:mysql://139.9.45.247:3306/db1?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8
         username: root
-        password: 123456
+        password: yaoyao0203
 
     config:
       props:
@@ -61,24 +62,4 @@ sharding:
           # author表只在db0中，所以必须这么配置节点，让它只走db0.author节点
           author:
             actual-data-nodes: db0.author
-
-
-#    config:
-#      sharding:
-#        default-database-strategy:
-#          inline:
-#            sharding-column: book_id
-#            algorithm-expression: db$->{book_id % 2}
-#
-#        tables:
-#          book:
-#            actual-data-nodes: db0.book_$->{0..1}
-#            table-strategy:
-#              inline:
-#                sharding-column: author_id
-#                algorithm-expression: book_$->{author_id % 2}
-#
-#      # 打印sql语句
-#      props:
-#        sql.show: true
 
